@@ -1,4 +1,5 @@
 import { Scene, PerspectiveCamera, WebGLRenderer, MeshBasicMaterial, Mesh, PlaneGeometry, Material, Vector3, BoxGeometry, Plane, ConeGeometry } from 'three'
+import { ConfettiParticles, ConfettiParticleFrame } from 'types'
 
 function getRandomMaterial (): Material {
   const getRandomByte = () => Math.ceil(Math.random() * 255)
@@ -13,30 +14,6 @@ function getRandomVector (): Vector3 {
 function getRandomBoxGeometry (): BoxGeometry {
   const getRandomDimension = () => (Math.random() * 0.6) + 0.4
   return new BoxGeometry(getRandomDimension() + 0.1, 0.05, getRandomDimension() - 0.1)
-}
-
-export interface ConfettiParticleFrame {
-  meshId: keyof ConfettiParticles;
-  vector: Vector3;
-  frame: {
-    position: {
-      x: number;
-      y: number;
-      z: number;
-    };
-    rotation: {
-      x: number;
-      y: number;
-      z: number;
-    };
-    flags: {
-      remove: boolean;
-    }
-  }
-}
-
-export interface ConfettiParticles {
-  [objectId: string]: Mesh
 }
 
 export class ConfettiScene {
