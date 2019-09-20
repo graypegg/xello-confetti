@@ -15,9 +15,24 @@ function getRandomBoxGeometry (): BoxGeometry {
   return new BoxGeometry(getRandomDimension() + 0.1, 0.05, getRandomDimension() - 0.1)
 }
 
-interface ConfettiParticle {
+export interface ConfettiParticle {
   mesh: Mesh;
   vector: Vector3;
+  frame: {
+    position: {
+      x: number;
+      y: number;
+      z: number;
+    };
+    rotation: {
+      x: number;
+      y: number;
+      z: number;
+    };
+    flags: {
+      remove: boolean;
+    }
+  }
 }
 
 export class ConfettiScene {
@@ -61,36 +76,65 @@ export class ConfettiScene {
       const geometry = getRandomBoxGeometry()
       const material = getRandomMaterial()
       const confettiMesh = new Mesh(geometry, material)
-      confettiMesh.position.x = Math.round(1)
-      confettiMesh.position.y = Math.round(0)
+      confettiMesh.position.x = 1
+      confettiMesh.position.y = 0
 
       this.particles.push({
         mesh: confettiMesh,
-        vector: getRandomVector()
+        vector: getRandomVector(),
+        frame: {
+          position: {
+            x: confettiMesh.position.x,
+            y: confettiMesh.position.y,
+            z: confettiMesh.position.z
+          },
+          rotation: {
+            x: confettiMesh.rotation.x,
+            y: confettiMesh.rotation.y,
+            z: confettiMesh.rotation.z
+          },
+          flags: {
+            remove: false
+          }
+        }
       })
       this.scene.add(confettiMesh)
     }
   }
 
   private tick () {
-    this.particles = this.particles.reduce((particles, particle) => {
+    this.particles = this.particles.map((particle) => {
       const weightedVector = new Vector3(
         particle.vector.x,
         particle.vector.y * 2,
         particle.vector.z / 2
       )
-      particle.mesh.position.x += weightedVector.x
-      particle.mesh.position.y += weightedVector.y
-      particle.mesh.position.z += weightedVector.z
+      particle.frame.position.x += weightedVector.x
+      particle.frame.position.y += weightedVector.y
+      particle.frame.position.z += weightedVector.z
       const angleZ = weightedVector.angleTo(new Vector3(1, 1, 0))
       const angleY = weightedVector.angleTo(new Vector3(1, 0, 1))
       const angleX = weightedVector.angleTo(new Vector3(0, 1, 1))
-      particle.mesh.rotation.z = angleZ
-      particle.mesh.rotation.y = angleY
-      particle.mesh.rotation.x = angleX
+      particle.frame.rotation.z = angleZ
+      particle.frame.rotation.y = angleY
+      particle.frame.rotation.x = angleX
       particle.vector.add(new Vector3(0, -0.01, 0))
-      if (Math.abs(particle.mesh.position.x) < 30 || particle.mesh.position.y > 10) {
-        return particles.concat(particle)
+
+      if (particle.frame.position.y < -2) {
+        particle.frame.flags.remove = true
+      }
+      return particle
+    })
+
+    this.particles = this.particles.reduce((particles, particle) => {
+      if (!particle.frame.flags.remove) {
+        particle.mesh.position.x = particle.frame.position.x
+        particle.mesh.position.y = particle.frame.position.y
+        particle.mesh.position.z = particle.frame.position.z
+        particle.mesh.rotation.x = particle.frame.rotation.x
+        particle.mesh.rotation.y = particle.frame.rotation.y
+        particle.mesh.rotation.z = particle.frame.rotation.z
+        return particles.concat([particle])
       } else {
         this.scene.remove(particle.mesh)
         return particles
@@ -98,8 +142,6 @@ export class ConfettiScene {
     }, [] as ConfettiParticle[])
 
     if (this.frame > 200) this.stop()
-
-    console.log(this.particles.length)
 
     requestAnimationFrame(() => {
       this.renderer.render(this.scene, this.camera)
