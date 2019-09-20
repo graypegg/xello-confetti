@@ -10,7 +10,10 @@ class XelloConfetti extends HTMLElement {
     const scene = new ConfettiScene()
     scene.mount(this.mountRoot)
 
-    scene.render()
+    scene.start()
+    setTimeout(() => {
+      scene.stop()
+    }, 1000)
   }
 }
 

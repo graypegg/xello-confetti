@@ -20,7 +20,7 @@ export class ConfettiScene {
   private camera: PerspectiveCamera
   private renderer: WebGLRenderer
   private particles: ConfettiParticle[] = []
-  private frame: number = 0
+  private timer: number = null
 
   constructor () {
     this.scene = new Scene()
@@ -31,6 +31,22 @@ export class ConfettiScene {
 
   mount (element: HTMLElement | ShadowRoot) {
     element.appendChild(this.renderer.domElement)
+  }
+
+  start () {
+    this.placeConfetti()
+    this.camera.position.z = 15
+    this.camera.position.y = 10
+    this.timer = setInterval(this.tick.bind(this), 30)
+  }
+
+  stop() {
+    this.particles.forEach((particle) => {
+      this.scene.remove(particle.mesh)
+    })
+    this.particles = []
+    if (this.timer !== null) clearInterval(this.timer)
+    this.renderer.render(this.scene, this.camera)
   }
 
   private placeConfetti () {
@@ -49,15 +65,7 @@ export class ConfettiScene {
     }
   }
 
-  render () {
-    this.placeConfetti()
-    this.camera.position.z = 15
-    this.camera.position.y = 10
-    setInterval(this.tick.bind(this), 30)
-    setInterval(this.placeConfetti.bind(this), 200)
-  }
-
-  tick () {
+  private tick () {
     this.particles = this.particles.reduce((particles, particle) => {
       const weightedVector = new Vector3(
         particle.vector.x,
@@ -84,7 +92,6 @@ export class ConfettiScene {
 
     requestAnimationFrame(() => {
       this.renderer.render(this.scene, this.camera)
-      this.frame++
     })
   }
 }
