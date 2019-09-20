@@ -15,8 +15,8 @@ function getRandomBoxGeometry (): BoxGeometry {
   return new BoxGeometry(getRandomDimension() + 0.1, 0.05, getRandomDimension() - 0.1)
 }
 
-export interface ConfettiParticle {
-  mesh: Mesh;
+export interface ConfettiParticleFrame {
+  meshId: keyof ConfettiParticles;
   vector: Vector3;
   frame: {
     position: {
@@ -35,13 +35,19 @@ export interface ConfettiParticle {
   }
 }
 
+export interface ConfettiParticles {
+  [objectId: string]: Mesh
+}
+
 export class ConfettiScene {
   private scene: Scene
   private camera: PerspectiveCamera
   private renderer: WebGLRenderer
-  private particles: ConfettiParticle[] = []
+  private particleFrames: ConfettiParticleFrame[] = []
+  private particles: ConfettiParticles = {}
   private timer: number = null
   private frame: number = 0
+  private bakingWorker: Worker = null
 
   constructor () {
     this.scene = new Scene()
@@ -55,6 +61,8 @@ export class ConfettiScene {
   }
 
   start () {
+    this.bakingWorker = new Worker('./bake.ts', { type: 'module' });
+    this.bakingWorker.addEventListener('message', (event) => this.commit(event.data))
     this.placeConfetti()
     this.camera.position.z = 15
     this.camera.position.y = 12
@@ -62,25 +70,29 @@ export class ConfettiScene {
   }
 
   stop() {
-    this.particles.forEach((particle) => {
-      this.scene.remove(particle.mesh)
+    if (this.bakingWorker) this.bakingWorker.terminate()
+    this.bakingWorker = null
+    Object.keys(this.particles).forEach((objectId) => {
+      this.scene.remove(this.particles[objectId])
     })
-    this.particles = []
+    this.particles = {}
+    this.particleFrames = []
     if (this.timer !== null) clearInterval(this.timer)
     this.renderer.render(this.scene, this.camera)
     this.frame = 0
   }
 
   private placeConfetti () {
-    for (let i=0; i < 300; i++) {
+    for (let i=0; i < 1000; i++) {
       const geometry = getRandomBoxGeometry()
       const material = getRandomMaterial()
       const confettiMesh = new Mesh(geometry, material)
       confettiMesh.position.x = 1
       confettiMesh.position.y = 0
 
-      this.particles.push({
-        mesh: confettiMesh,
+      this.particles[confettiMesh.uuid] = confettiMesh
+      this.particleFrames.push({
+        meshId: confettiMesh.uuid,
         vector: getRandomVector(),
         frame: {
           position: {
@@ -98,54 +110,37 @@ export class ConfettiScene {
           }
         }
       })
+
       this.scene.add(confettiMesh)
     }
   }
 
-  private tick () {
-    this.particles = this.particles.map((particle) => {
-      const weightedVector = new Vector3(
-        particle.vector.x,
-        particle.vector.y * 2,
-        particle.vector.z / 2
-      )
-      particle.frame.position.x += weightedVector.x
-      particle.frame.position.y += weightedVector.y
-      particle.frame.position.z += weightedVector.z
-      const angleZ = weightedVector.angleTo(new Vector3(1, 1, 0))
-      const angleY = weightedVector.angleTo(new Vector3(1, 0, 1))
-      const angleX = weightedVector.angleTo(new Vector3(0, 1, 1))
-      particle.frame.rotation.z = angleZ
-      particle.frame.rotation.y = angleY
-      particle.frame.rotation.x = angleX
-      particle.vector.add(new Vector3(0, -0.01, 0))
-
-      if (particle.frame.position.y < -2) {
-        particle.frame.flags.remove = true
-      }
-      return particle
-    })
-
-    this.particles = this.particles.reduce((particles, particle) => {
-      if (!particle.frame.flags.remove) {
-        particle.mesh.position.x = particle.frame.position.x
-        particle.mesh.position.y = particle.frame.position.y
-        particle.mesh.position.z = particle.frame.position.z
-        particle.mesh.rotation.x = particle.frame.rotation.x
-        particle.mesh.rotation.y = particle.frame.rotation.y
-        particle.mesh.rotation.z = particle.frame.rotation.z
-        return particles.concat([particle])
+  private commit (nextFrame: ConfettiParticleFrame[]) {
+    this.particleFrames = nextFrame.reduce((particleFrames, particleFrame) => {
+      if (!particleFrame.frame.flags.remove) {
+        this.particles[particleFrame.meshId].position.x = particleFrame.frame.position.x
+        this.particles[particleFrame.meshId].position.y = particleFrame.frame.position.y
+        this.particles[particleFrame.meshId].position.z = particleFrame.frame.position.z
+        this.particles[particleFrame.meshId].rotation.x = particleFrame.frame.rotation.x
+        this.particles[particleFrame.meshId].rotation.y = particleFrame.frame.rotation.y
+        this.particles[particleFrame.meshId].rotation.z = particleFrame.frame.rotation.z
+        return particleFrames.concat([particleFrame])
       } else {
-        this.scene.remove(particle.mesh)
-        return particles
+        this.scene.remove(this.particles[particleFrame.meshId])
+        return particleFrames
       }
-    }, [] as ConfettiParticle[])
-
-    if (this.frame > 200) this.stop()
+    }, [] as ConfettiParticleFrame[])
 
     requestAnimationFrame(() => {
       this.renderer.render(this.scene, this.camera)
       this.frame++
     })
+  }
+
+  private tick () {
+    if (this.frame > 200) this.stop()
+    else {
+      this.bakingWorker.postMessage(this.particleFrames)
+    }
   }
 }
