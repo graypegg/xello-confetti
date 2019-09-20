@@ -3,17 +3,21 @@ import { ConfettiScene } from './scene'
 
 class XelloConfetti extends HTMLElement {
   private mountRoot: ShadowRoot | null = null
+  private scene: ConfettiScene;
   
-  connectedCallback() {
+  connectedCallback () {
     this.mountRoot = this.attachShadow({ mode: 'open' })
+    this.scene = new ConfettiScene()
+    this.scene.mount(this.mountRoot)
+  }
 
-    const scene = new ConfettiScene()
-    scene.mount(this.mountRoot)
+  play () {
+    this.clear()
+    this.scene.start()
+  }
 
-    scene.start()
-    setTimeout(() => {
-      scene.stop()
-    }, 1000)
+  clear () {
+    this.scene.stop()
   }
 }
 

@@ -16,8 +16,15 @@
     </style>
   </head>
   <body>
+    <button>confetti now!</button>
     <div>🎉</div>
     <xello-confetti></xello-confetti>
     <script src="dist/index.js"></script>
+    <script>
+      const confetti = document.querySelector('xello-confetti');
+      document.querySelector('button').addEventListener('click', () => {
+        confetti.play()
+      })
+    </script>
   </body>
 </html>
