@@ -50,8 +50,8 @@ export class ConfettiScene {
   }
 
   private placeConfetti () {
-    for (let i=0; i < 10; i++) {
-      const geometry = new BoxGeometry(0.5, 0.5, 0.05)
+    for (let i=0; i < 100; i++) {
+      const geometry = new BoxGeometry(0.5, 0.05, 0.5)
       const material = getRandomMaterial()
       const confettiMesh = new Mesh(geometry, material)
       confettiMesh.position.x = Math.round(1)
@@ -75,9 +75,9 @@ export class ConfettiScene {
       particle.mesh.position.x += weightedVector.x
       particle.mesh.position.y += weightedVector.y
       particle.mesh.position.z += weightedVector.z
-      const angleZ = weightedVector.angleTo(new Vector3(255, 255, 0))
-      const angleY = weightedVector.angleTo(new Vector3(255, 0, 255))
-      const angleX = weightedVector.angleTo(new Vector3(0, 255, 255))
+      const angleZ = weightedVector.angleTo(new Vector3(1, 1, 0))
+      const angleY = weightedVector.angleTo(new Vector3(1, 0, 1))
+      const angleX = weightedVector.angleTo(new Vector3(0, 1, 1))
       particle.mesh.rotation.z = angleZ
       particle.mesh.rotation.y = angleY
       particle.mesh.rotation.x = angleX
