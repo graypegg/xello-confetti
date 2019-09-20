@@ -10,6 +10,11 @@ function getRandomVector (): Vector3 {
   return new Vector3(getRandomDimension() * (Math.random() > 0.5 ? -1 : 1), getRandomDimension(), getRandomDimension())
 }
 
+function getRandomBoxGeometry (): BoxGeometry {
+  const getRandomDimension = () => (Math.random() * 0.6) + 0.4
+  return new BoxGeometry(getRandomDimension() + 0.1, 0.05, getRandomDimension() - 0.1)
+}
+
 interface ConfettiParticle {
   mesh: Mesh;
   vector: Vector3;
@@ -21,6 +26,7 @@ export class ConfettiScene {
   private renderer: WebGLRenderer
   private particles: ConfettiParticle[] = []
   private timer: number = null
+  private frame: number = 0
 
   constructor () {
     this.scene = new Scene()
@@ -36,7 +42,7 @@ export class ConfettiScene {
   start () {
     this.placeConfetti()
     this.camera.position.z = 15
-    this.camera.position.y = 10
+    this.camera.position.y = 12
     this.timer = setInterval(this.tick.bind(this), 30)
   }
 
@@ -47,11 +53,12 @@ export class ConfettiScene {
     this.particles = []
     if (this.timer !== null) clearInterval(this.timer)
     this.renderer.render(this.scene, this.camera)
+    this.frame = 0
   }
 
   private placeConfetti () {
-    for (let i=0; i < 100; i++) {
-      const geometry = new BoxGeometry(0.5, 0.05, 0.5)
+    for (let i=0; i < 300; i++) {
+      const geometry = getRandomBoxGeometry()
       const material = getRandomMaterial()
       const confettiMesh = new Mesh(geometry, material)
       confettiMesh.position.x = Math.round(1)
@@ -82,7 +89,7 @@ export class ConfettiScene {
       particle.mesh.rotation.y = angleY
       particle.mesh.rotation.x = angleX
       particle.vector.add(new Vector3(0, -0.01, 0))
-      if (Math.abs(particle.mesh.position.x) < 60 || particle.mesh.position.y > 25) {
+      if (Math.abs(particle.mesh.position.x) < 30 || particle.mesh.position.y > 10) {
         return particles.concat(particle)
       } else {
         this.scene.remove(particle.mesh)
@@ -90,8 +97,13 @@ export class ConfettiScene {
       }
     }, [] as ConfettiParticle[])
 
+    if (this.frame > 200) this.stop()
+
+    console.log(this.particles.length)
+
     requestAnimationFrame(() => {
       this.renderer.render(this.scene, this.camera)
+      this.frame++
     })
   }
 }
