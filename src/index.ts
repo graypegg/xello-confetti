@@ -11,6 +11,10 @@ class XelloConfetti extends HTMLElement {
     this.scene.mount(this.mountRoot)
   }
 
+  disconnectedCallback () {
+    this.scene.kill()
+  }
+
   play () {
     this.clear()
     this.scene.start()

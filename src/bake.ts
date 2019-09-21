@@ -4,7 +4,8 @@ import { ConfettiParticleFrame } from 'types'
 addEventListener('message', event => {
   const particles = event.data as ConfettiParticleFrame[]
 
-  const nextFrame = particles.map((particle) => {
+  const nextFrame = particles.reduce((particles, particle) => {
+    if (particle.frame.flags.remove) return particles
     const weightedVector = new Vector3(
       particle.vector.x,
       particle.vector.y * 3,
@@ -26,13 +27,18 @@ addEventListener('message', event => {
       particle.vector.x,
       particle.vector.y,
       particle.vector.z
-    ).add(new Vector3(0, -0.01, 0))
+    ).add(new Vector3(
+      0
+      -0.005,
+      particle.vector.z * -0.02
+    ))
 
-    if (particle.frame.position.y < -2) {
-      particle.frame.flags.remove = false
+    if (particle.frame.position.y < -2 || Math.abs(particle.frame.position.x) > 30) {
+      particle.frame.flags.remove = true
     }
-    return particle
-  })
+
+    return particles.concat([particle])
+  }, [] as ConfettiParticleFrame[])
 
   postMessage(nextFrame, null);
 })
