@@ -2,13 +2,15 @@ import { Scene, PerspectiveCamera, WebGLRenderer, MeshBasicMaterial, Mesh, Plane
 import { ConfettiParticles, ConfettiParticleFrame } from 'types'
 
 function getRandomMaterial (): Material {
-  const getRandomByte = () => Math.ceil(Math.random() * 255)
-  return new MeshBasicMaterial({ color: (getRandomByte() + (getRandomByte() << 8) + (getRandomByte() << 16)) })
+  const getRandomByte = (min: number, variation: number) => Math.ceil(Math.random() * variation) + min
+  return new MeshBasicMaterial({ color: (getRandomByte(200, 55) + (getRandomByte(175, 80) << 8) + (getRandomByte(125, 130) << 16)) })
 }
 
 function getRandomVector (): Vector3 {
   const getRandomDimension = () => Math.ceil(Math.random() * 100)/220
-  return new Vector3(getRandomDimension() * (Math.random() > 0.5 ? -1 : 1), getRandomDimension(), getRandomDimension())
+  const xDimension = getRandomDimension() * (Math.random() > 0.5 ? -1 : 1)
+  const yDimension = ((1 / ((Math.abs(xDimension) < 0.15 ? 0.15 : Math.abs(xDimension)))) / 5) * getRandomDimension()
+  return new Vector3(xDimension, yDimension, getRandomDimension())
 }
 
 function getRandomBoxGeometry (): BoxGeometry {
@@ -49,7 +51,7 @@ export class ConfettiScene {
       this.camera.position.z = 15
       this.camera.position.y = 12
       this.tick()
-      this.timer = setInterval(this.tick.bind(this), 30)
+      this.timer = setInterval(this.tick.bind(this), 20)
     } else {
       throw new Error('The web worker was not registered or did not catch up the buffer in time.')
     }
@@ -88,7 +90,7 @@ export class ConfettiScene {
   }
 
   private initConfetti () {
-    for (let i=0; i < 2000; i++) {
+    for (let i=0; i < 1500; i++) {
       const geometry = getRandomBoxGeometry()
       const material = getRandomMaterial()
       const confettiMesh = new Mesh(geometry, material)
