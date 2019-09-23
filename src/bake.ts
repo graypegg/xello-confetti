@@ -1,4 +1,4 @@
-import { Vector3 } from 'three'
+import { Vector3 } from 'three/src/math/Vector3'
 import { ConfettiParticleFrame } from 'types'
 
 addEventListener('message', event => {
@@ -40,5 +40,5 @@ addEventListener('message', event => {
     return particles.concat([particle])
   }, [] as ConfettiParticleFrame[])
 
-  postMessage(nextFrame, null);
+  postMessage(nextFrame, null)
 })

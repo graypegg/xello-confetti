@@ -1,4 +1,4 @@
-import { Scene, PerspectiveCamera, WebGLRenderer, MeshBasicMaterial, Mesh, PlaneGeometry, Material, Vector3, BoxGeometry, Plane, ConeGeometry, Vector } from 'three'
+import { Scene, PerspectiveCamera, WebGLRenderer, MeshBasicMaterial, Mesh, Material, Vector3, BoxGeometry } from 'three'
 import { ConfettiParticles, ConfettiParticleFrame } from 'types'
 
 function getRandomMaterial (): Material {
@@ -25,6 +25,7 @@ export class ConfettiScene {
   private timer: number = null
   private frame: number = 0
   private bakingWorker: Worker = null
+  private bakingWorkerReady = false
   private particleFrameBuffer: ConfettiParticleFrame[][] = [[]]
   private particles: ConfettiParticles = {}
 
@@ -46,15 +47,16 @@ export class ConfettiScene {
   }
 
   start () {
-    if (this.bakingWorker && this.particles) {
-      this.scene.visible = true
-      this.camera.position.z = 15
-      this.camera.position.y = 12
-      this.tick()
-      this.timer = setInterval(this.tick.bind(this), 20)
-    } else {
-      throw new Error('The web worker was not registered or did not catch up the buffer in time.')
-    }
+    const waitForBakingWorker = setInterval(() => {
+      if (this.bakingWorker && this.particles && this.bakingWorkerReady) {
+        this.scene.visible = true
+        this.camera.position.z = 15
+        this.camera.position.y = 12
+        this.tick()
+        this.timer = setInterval(this.tick.bind(this), 25)
+        clearInterval(waitForBakingWorker)
+      }
+    }, 100)
   }
 
   stop() {
@@ -90,7 +92,7 @@ export class ConfettiScene {
   }
 
   private initConfetti () {
-    for (let i=0; i < 1500; i++) {
+    for (let i=0; i < 750; i++) {
       const geometry = getRandomBoxGeometry()
       const material = getRandomMaterial()
       const confettiMesh = new Mesh(geometry, material)
@@ -127,23 +129,30 @@ export class ConfettiScene {
   }
 
   private commit (nextFrame: ConfettiParticleFrame[]) {
-    this.particleFrameBuffer.push(nextFrame)
-
     if (this.particleFrameBuffer.length <= 200) {
       this.bakingWorker.postMessage(nextFrame)
+
+      if (this.particleFrameBuffer.length > 10) {
+        this.bakingWorkerReady = true
+      }
     }
+    this.particleFrameBuffer.push(nextFrame)
   }
 
   private renderBuffer () {
     if (this.currentFrameBuffer) {
       this.currentFrameBuffer.forEach((particleFrame) => {
         if (!particleFrame.frame.flags.remove) {
-          this.particles[particleFrame.meshId].position.x = particleFrame.frame.position.x
-          this.particles[particleFrame.meshId].position.y = particleFrame.frame.position.y
-          this.particles[particleFrame.meshId].position.z = particleFrame.frame.position.z
-          this.particles[particleFrame.meshId].rotation.x = particleFrame.frame.rotation.x
-          this.particles[particleFrame.meshId].rotation.y = particleFrame.frame.rotation.y
-          this.particles[particleFrame.meshId].rotation.z = particleFrame.frame.rotation.z
+          this.particles[particleFrame.meshId].position.set(
+            particleFrame.frame.position.x,
+            particleFrame.frame.position.y,
+            particleFrame.frame.position.z
+          )
+          this.particles[particleFrame.meshId].rotation.set(
+            particleFrame.frame.rotation.x,
+            particleFrame.frame.rotation.y,
+            particleFrame.frame.rotation.z
+          )
         } else {
           this.scene.remove(this.particles[particleFrame.meshId])
         }
@@ -153,6 +162,8 @@ export class ConfettiScene {
       requestAnimationFrame(() => {
         this.renderer.render(this.scene, this.camera)
       })
+    } else {
+      console.warn('Ahead of frame buffer!')
     }
   }
 
