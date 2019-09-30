@@ -1,6 +1,6 @@
 {
   "name": "xello-confetti",
-  "version": "1.0.3",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -22,7 +22,6 @@
     "typescript": "^3.6.3",
     "webpack": "^4.39.3",
     "webpack-cli": "^3.3.8",
-    "worker-loader": "^2.0.0",
-    "worker-plugin": "^3.2.0"
+    "worker-loader": "^2.0.0"
   }
 }
