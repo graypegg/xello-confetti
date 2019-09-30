@@ -9,7 +9,6 @@ class XelloConfetti extends HTMLElement {
     this.mountRoot = this.attachShadow({ mode: 'open' })
     this.scene = new ConfettiScene()
     this.scene.mount(this.mountRoot)
-    this.play()
   }
 
   disconnectedCallback () {

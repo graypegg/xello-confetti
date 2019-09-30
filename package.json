@@ -2,7 +2,7 @@
   "name": "xello-confetti",
   "version": "1.0.2",
   "description": "",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
     "start": "webpack --watch",
     "build": "rm -f ./dist/*.js && webpack --config 'webpack.config.prod.js' && cp package.json ./dist/package.json",
@@ -10,14 +10,13 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "dependencies": { },
+  "devDependencies": {
     "@types/lodash": "^4.14.141",
     "@types/node": "^12.7.8",
     "@types/three": "^0.103.2",
     "lodash": "^4.17.15",
-    "three": "^0.108.0"
-  },
-  "devDependencies": {
+    "three": "^0.108.0",
     "ts-loader": "^6.1.0",
     "typescript": "^3.6.3",
     "webpack": "^4.39.3",
