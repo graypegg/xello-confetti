@@ -1,6 +1,7 @@
 import { Scene, PerspectiveCamera, WebGLRenderer, MeshBasicMaterial, Mesh, Material, Vector3, BoxGeometry } from 'three'
 import { ConfettiParticles, ConfettiParticleFrame } from 'types'
 import { ResizeWatcher } from './resize-watcher'
+import Worker from './bake.worker'
 
 function getRandomMaterial (): Material {
   const getRandomByte = (min: number, variation: number) => Math.ceil(Math.random() * variation) + min
@@ -40,8 +41,8 @@ export class ConfettiScene {
 
   mount (element: HTMLElement | ShadowRoot) {
     element.appendChild(this.renderer.domElement)
-    this.bakingWorker = new Worker('./bake.ts', { type: 'module' })
-    this.bakingWorker.addEventListener('message', (event) => this.commit(event.data))
+    this.bakingWorker = new (Worker as any)()
+    this.bakingWorker.addEventListener('message', (event: MessageEvent) => this.commit(event.data))
     this.initConfetti()
     if (this.latestFrameBuffer) {
       this.bakingWorker.postMessage(this.latestFrameBuffer)
@@ -55,10 +56,10 @@ export class ConfettiScene {
         this.camera.position.z = 15
         this.camera.position.y = 12
         this.tick()
-        this.timer = setInterval(this.tick.bind(this), 25)
+        this.timer = window.setInterval(this.tick.bind(this), 15)
         clearInterval(waitForBakingWorker)
       }
-    }, 100)
+    }, 200)
     this.resizeWatcher = new ResizeWatcher()
     this.resizeWatcher.onResize((height, width) => {
       this.camera.aspect = width / height

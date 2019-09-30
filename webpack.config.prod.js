@@ -1,18 +1,18 @@
 const path = require('path')
-const WorkerPlugin = require('worker-plugin')
 
 module.exports = {
   entry: './src/index.ts',
   mode: 'production',
-  plugins: [
-    new WorkerPlugin()
-  ],
   module: {
     rules: [
       {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/
+      },
+      {
+        test: /\.worker\.js$/,
+        use: [{ loader: 'worker-loader', options: { inline: true } }]
       }
     ]
   },

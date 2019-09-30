@@ -1,8 +1,10 @@
 import { Vector3 } from 'three/src/math/Vector3'
-import { ConfettiParticleFrame } from 'types'
 
-addEventListener('message', event => {
-  const particles = event.data as ConfettiParticleFrame[]
+const ctx = self
+export default ctx
+
+ctx.addEventListener('message', event => {
+  const particles = event.data
 
   const nextFrame = particles.reduce((particles, particle) => {
     if (particle.frame.flags.remove) return particles
@@ -38,7 +40,7 @@ addEventListener('message', event => {
     }
 
     return particles.concat([particle])
-  }, [] as ConfettiParticleFrame[])
+  }, [])
 
-  postMessage(nextFrame, null)
+  ctx.postMessage(nextFrame, null)
 })
