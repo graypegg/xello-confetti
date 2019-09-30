@@ -1,4 +1,4 @@
-import throttle from 'lodash/fp/throttle'
+import debounce from 'lodash/fp/debounce'
 
 type ResizeMethod = (height: number, width: number) => void
 
@@ -9,7 +9,7 @@ export class ResizeWatcher {
   private eventInstance: () => void = null
 
   constructor () {
-    this.eventInstance = throttle(100)(this.tick.bind(this))
+    this.eventInstance = debounce(200)(this.tick.bind(this))
     window.addEventListener('resize', this.eventInstance)
   }
 
