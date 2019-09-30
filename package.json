@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "webpack --watch",
-    "build": "webpack --config 'webpack.config.prod.js'",
+    "build": "rm -f ./dist/*.js && webpack --config 'webpack.config.prod.js' && cp package.json ./dist/package.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -14,13 +14,13 @@
     "@types/lodash": "^4.14.141",
     "@types/three": "^0.103.2",
     "lodash": "^4.17.15",
-    "three": "^0.108.0",
+    "three": "^0.108.0"
+  },
+  "devDependencies": {
+    "webpack-cli": "^3.3.8",
     "ts-loader": "^6.1.0",
     "typescript": "^3.6.3",
     "webpack": "^4.39.3",
     "worker-plugin": "^3.2.0"
-  },
-  "devDependencies": {
-    "webpack-cli": "^3.3.8"
   }
 }
