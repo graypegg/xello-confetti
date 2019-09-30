@@ -11,7 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/lodash": "^4.14.141",
     "@types/three": "^0.103.2",
+    "lodash": "^4.17.15",
     "three": "^0.108.0",
     "ts-loader": "^6.1.0",
     "typescript": "^3.6.3",
