@@ -1,6 +1,6 @@
 {
   "name": "xello-confetti",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": { },
+  "dependencies": {},
   "devDependencies": {
     "@types/lodash": "^4.14.141",
     "@types/node": "^12.7.8",
