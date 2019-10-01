@@ -1,5 +1,5 @@
 import { ConfettiParticles, ConfettiParticleFrame } from 'types'
-import { Renderer, Scene, Camera } from 'three'
+import { Renderer, Scene, PerspectiveCamera } from 'three'
 
 export class FrameRenderer {
   private lastRenderedScreenFrame: ConfettiParticleFrame[] = null
@@ -8,7 +8,7 @@ export class FrameRenderer {
     private particles: ConfettiParticles,
     private renderer: Renderer,
     private scene: Scene,
-    private camera: Camera
+    private camera: PerspectiveCamera
   ) { }
 
   public render (buffer: ConfettiParticleFrame[]) {
@@ -37,11 +37,26 @@ export class FrameRenderer {
 
   public resize (width: number, height: number) {
     this.renderer.setSize(width, height)
-    if (this.lastRenderedScreenFrame) this.render(this.lastRenderedScreenFrame)
+    this.camera.aspect = width / height
+    this.renderSavedBuffer()
   }
 
   public mount (element: HTMLElement | ShadowRoot) {
     element.appendChild(this.renderer.domElement)
+    this.renderSavedBuffer()
+  }
+
+  public clear () {
+    this.scene.visible = false
+    this.renderSavedBuffer()
+  }
+
+  public reveal () {
+    this.scene.visible = true
+    this.renderSavedBuffer()
+  }
+
+  private renderSavedBuffer () {
     if (this.lastRenderedScreenFrame) this.render(this.lastRenderedScreenFrame)
   }
 }

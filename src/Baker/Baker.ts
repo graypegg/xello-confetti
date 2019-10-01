@@ -1,5 +1,6 @@
 import Worker from './bake.worker'
 import { ConfettiParticleFrame } from 'types'
+import { MAX_FRAMES } from '../consts'
 
 export class Baker {
   private worker = new (Worker as any)() as Worker
@@ -33,7 +34,7 @@ export class Baker {
   }
 
   private commit(newFrames: ConfettiParticleFrame[][]): void {
-    if (this.screenFrameBuffer.length <= 350) {
+    if (this.screenFrameBuffer.length <= MAX_FRAMES) {
       this.worker.postMessage(newFrames[newFrames.length - 1])
 
       if (this.screenFrameBuffer.length > 100) {
