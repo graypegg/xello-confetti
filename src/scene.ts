@@ -146,15 +146,16 @@ export class ConfettiScene {
     this.scene.add(confettiMesh)
   }
 
-  private commit (nextFrame: ConfettiParticleFrame[]) {
+  private commit (nextFrames: ConfettiParticleFrame[][]) {
     if (this.particleFrameBuffer.length <= 250) {
-      this.bakingWorker.postMessage(nextFrame)
+      this.bakingWorker.postMessage(nextFrames[nextFrames.length - 1])
 
       if (this.particleFrameBuffer.length > 100) {
         this.bakingWorkerReady = true
       }
     }
-    this.particleFrameBuffer.push(nextFrame)
+
+    this.particleFrameBuffer = this.particleFrameBuffer.concat(nextFrames)
   }
 
   private renderBuffer () {

@@ -4,8 +4,19 @@ const ctx = self
 export default ctx
 
 ctx.addEventListener('message', event => {
-  const particles = event.data
+  let frames = new Array(25).fill(null)
+  frames[0] = event.data
+  frames = frames.slice(1).reduce((newFrames, frame, index) => {
+    if (index === 0) return newFrames
+    return newFrames.concat([
+      generateFrame(JSON.parse(JSON.stringify(newFrames[index - 1]))) // Yes, this IS actually the fastest way to deep clone a simple object
+    ])
+  }, [event.data])
 
+  ctx.postMessage(frames, null)
+})
+
+function generateFrame (particles) {
   const nextFrame = particles.reduce((particles, particle) => {
     if (particle.frame.flags.remove) return particles
     const weightedVector = new Vector3(
@@ -42,5 +53,5 @@ ctx.addEventListener('message', event => {
     return particles.concat([particle])
   }, [])
 
-  ctx.postMessage(nextFrame, null)
-})
+  return nextFrame
+}
