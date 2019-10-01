@@ -1,5 +1,5 @@
-import './scene'
-import { ConfettiScene } from './scene'
+import './Scene/Scene'
+import { ConfettiScene } from './Scene/Scene'
 
 class XelloConfetti extends HTMLElement {
   private mountRoot: ShadowRoot | null = null

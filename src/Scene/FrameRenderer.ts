@@ -2,6 +2,8 @@ import { ConfettiParticles, ConfettiParticleFrame } from 'types'
 import { Renderer, Scene, Camera } from 'three'
 
 export class FrameRenderer {
+  private lastRenderedScreenFrame: ConfettiParticleFrame[] = null
+
   constructor (
     private particles: ConfettiParticles,
     private renderer: Renderer,
@@ -10,6 +12,7 @@ export class FrameRenderer {
   ) { }
 
   public render (buffer: ConfettiParticleFrame[]) {
+    this.lastRenderedScreenFrame = buffer
     buffer.forEach((particleFrame) => {
       if (!particleFrame.frame.flags.remove) {
         this.particles[particleFrame.meshId].position.set(
@@ -30,5 +33,15 @@ export class FrameRenderer {
     requestAnimationFrame(() => {
       this.renderer.render(this.scene, this.camera)
     })
+  }
+
+  public resize (width: number, height: number) {
+    this.renderer.setSize(width, height)
+    if (this.lastRenderedScreenFrame) this.render(this.lastRenderedScreenFrame)
+  }
+
+  public mount (element: HTMLElement | ShadowRoot) {
+    element.appendChild(this.renderer.domElement)
+    if (this.lastRenderedScreenFrame) this.render(this.lastRenderedScreenFrame)
   }
 }

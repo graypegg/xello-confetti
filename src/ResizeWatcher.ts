@@ -1,10 +1,10 @@
 import debounce from 'lodash/fp/debounce'
 
-type ResizeMethod = (height: number, width: number) => void
+type ResizeMethod = (width: number, height: number) => void
 
 export class ResizeWatcher {
-  private height = 0
   private width = 0
+  private height = 0
   private methods: ResizeMethod[] = []
   private eventInstance: () => void = null
 
@@ -15,14 +15,14 @@ export class ResizeWatcher {
   }
 
   private tick () {
-    this.height = window.innerHeight
     this.width = window.innerWidth
+    this.height = window.innerHeight
 
     this.methods.forEach((method) => {
-      const height = this.height
       const width = this.width
+      const height = this.height
       setTimeout(() => {
-        method(height, width)
+        method(width, height)
       })
     })
   }

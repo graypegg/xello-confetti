@@ -1,8 +1,8 @@
 import { Scene, PerspectiveCamera, WebGLRenderer, MeshBasicMaterial, Mesh, Material, Vector3, BoxGeometry } from 'three'
-import { ConfettiParticles, ConfettiParticleFrame } from 'types'
-import { ResizeWatcher } from './resize-watcher'
-import Worker from './bake.worker'
-import { FrameRenderer } from './Scene/FrameRenderer'
+import { ConfettiParticles } from 'types'
+import { ResizeWatcher } from '../ResizeWatcher'
+import { FrameRenderer } from './FrameRenderer'
+import { Baker } from '../Baker/Baker'
 
 function getRandomMaterial (): Material {
   const colours = [
@@ -12,7 +12,7 @@ function getRandomMaterial (): Material {
     new MeshBasicMaterial({ color: '#F8AA24' }),
     new MeshBasicMaterial({ color: '#F86243' })
   ]
-  return colours[Math.floor(Math.random() * (colours.length))]
+  return colours[Math.floor(Math.random() * colours.length)]
 }
 
 function getRandomVector (): Vector3 {
@@ -33,12 +33,9 @@ export class ConfettiScene {
   private renderer: WebGLRenderer
   private timers: number[] = []
   private frame: number = 0
-  private bakingWorker: Worker = null
-  private bakingWorkerReady = false
-  private particleFrameBuffer: ConfettiParticleFrame[][] = [[]]
   private particles: ConfettiParticles = {}
-  public playing: boolean = false
 
+  private Baker: Baker = null
   private ResizeWatcher: ResizeWatcher = null
   private FrameRenderer: FrameRenderer = null
 
@@ -46,57 +43,47 @@ export class ConfettiScene {
     this.scene = new Scene()
     this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
     this.renderer = new WebGLRenderer({ alpha: true })
-    this.renderer.setSize(window.innerWidth, window.innerHeight)
   }
 
   mount (element: HTMLElement | ShadowRoot) {
-    element.appendChild(this.renderer.domElement)
-    this.bakingWorker = new (Worker as any)()
-    this.bakingWorker.addEventListener('message', (event: MessageEvent) => this.commit(event.data))
+    this.Baker = new Baker()
     this.initConfetti()
-    if (this.latestFrameBuffer) {
-      this.bakingWorker.postMessage(this.latestFrameBuffer)
-      this.FrameRenderer = new FrameRenderer(this.particles, this.renderer, this.scene, this.camera)
-    }
+    this.Baker.start()
+    this.FrameRenderer = new FrameRenderer(this.particles, this.renderer, this.scene, this.camera)
+    this.FrameRenderer.resize(window.innerHeight, window.innerWidth)
+    this.FrameRenderer.mount(element)
+    this.ResizeWatcher = new ResizeWatcher()
+    this.ResizeWatcher.onResize((width, height) => {
+      this.camera.aspect = width / height
+      this.FrameRenderer.resize(width, height)
+    })
   }
 
   start () {
-    if (!this.playing) {
-      this.playing = true
-      const waitForBakingWorker = setInterval(() => {
-        if (this.bakingWorker && this.particles && this.FrameRenderer && this.bakingWorkerReady) {
-          this.scene.visible = true
-          this.camera.position.z = 20
-          this.camera.position.y = 16
-          this.tick()
-          this.timers.push(window.setInterval(this.tick.bind(this), 15))
-          clearInterval(waitForBakingWorker)
-        }
-      }, 200)
-      this.ResizeWatcher = new ResizeWatcher()
-      this.ResizeWatcher.onResize((height, width) => {
-        this.camera.aspect = width / height
-        this.renderer.setSize(width, height)
-        this.renderer.render(this.scene, this.camera)
-      })
-    }
+    const waitForBakingWorker = setInterval(() => {
+      if (this.Baker && this.Baker.ready && this.particles && this.FrameRenderer) {
+        this.scene.visible = true
+        this.camera.position.z = 20
+        this.camera.position.y = 16
+        this.tick()
+        this.timers.push(window.setInterval(this.tick.bind(this), 15))
+        clearInterval(waitForBakingWorker)
+      }
+    }, 200)
   }
 
   stop() {
-    this.playing = false
     this.scene.visible = false
     this.timers.forEach(timer => clearInterval(timer))
     this.timers = []
-    this.renderer.render(this.scene, this.camera)
     this.frame = 0
-    const firstFrame = this.currentFrameBuffer
+    if (this.FrameRenderer) this.FrameRenderer.render(this.Baker.getScreenFrame(0))
+    const firstFrame = this.Baker.getScreenFrame(0)
     Object.keys(this.particles).forEach(objectId => {
       const mesh = this.particles[objectId]
       const vector = firstFrame.find(frame => frame.meshId === objectId).vector
       this.placeConfetti(mesh, vector)
     })
-    if (this.ResizeWatcher) this.ResizeWatcher.stop()
-    this.ResizeWatcher = null
   }
 
   kill () {
@@ -105,17 +92,8 @@ export class ConfettiScene {
       this.scene.remove(this.particles[objectId])
     })
     this.particles = {}
-    this.particleFrameBuffer = [[]]
-    if (this.bakingWorker) this.bakingWorker.terminate()
-    this.bakingWorker = null
-  }
-
-  private get currentFrameBuffer () {
-    return this.particleFrameBuffer[this.frame]
-  }
-
-  private get latestFrameBuffer() {
-    return this.particleFrameBuffer[this.particleFrameBuffer.length - 1]
+    if (this.Baker) this.Baker.stop()
+    if (this.ResizeWatcher) this.ResizeWatcher.stop()
   }
 
   private initConfetti () {
@@ -132,7 +110,7 @@ export class ConfettiScene {
     confettiMesh.position.y = 0
 
     this.particles[confettiMesh.uuid] = confettiMesh
-    this.latestFrameBuffer.push({
+    this.Baker.latestScreenFrame.push({
       meshId: confettiMesh.uuid,
       vector: confettiVector,
       frame: {
@@ -155,31 +133,16 @@ export class ConfettiScene {
     this.scene.add(confettiMesh)
   }
 
-  private commit (nextFrames: ConfettiParticleFrame[][]) {
-    if (this.particleFrameBuffer.length <= 350) {
-      this.bakingWorker.postMessage(nextFrames[nextFrames.length - 1])
-
-      if (this.particleFrameBuffer.length > 100) {
-        this.bakingWorkerReady = true
-      }
-    }
-
-    this.particleFrameBuffer = this.particleFrameBuffer.concat(nextFrames)
-  }
-
-  private renderBuffer () {
-    if (this.currentFrameBuffer) {
-      this.FrameRenderer.render(this.currentFrameBuffer)
-      this.frame++
-    } else {
-      console.warn('Ahead of frame buffer!')
-    }
-  }
-
   private tick () {
     if (this.frame > 350) this.stop()
     else {
-      this.renderBuffer()
+      const currentScreenFrame = this.Baker.getScreenFrame(this.frame)
+      if (currentScreenFrame) {
+        this.FrameRenderer.render(currentScreenFrame)
+        this.frame++
+      } else {
+        console.warn('Ahead of frame buffer!')
+      }
     }
   }
 }
