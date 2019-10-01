@@ -12,7 +12,7 @@ module.exports = {
       },
       {
         test: /\.worker\.js$/,
-        use: [{ loader: 'worker-loader', options: { inline: true } }]
+        use: [{ loader: 'worker-loader', options: { inline: true, name: '[hash].baker.js' } }]
       }
     ]
   },
