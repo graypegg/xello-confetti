@@ -41,8 +41,8 @@ function generateFrame (particles) {
       particle.vector.y,
       particle.vector.z
     ).add(new Vector3(
-      (particle.vector.x < 0 ? -1 : 1) * (Math.sin(particle.vector.y < 0 ? Math.abs(particle.frame.position.y) : 0) * 0.01),
-      -0.01,
+      (particle.vector.x < 0 ? -1 : 1) * (Math.sin(particle.vector.y < 0 ? Math.abs(particle.frame.position.y * 2) : 0) * 0.02),
+      particle.vector.y > -0.15 ? -0.008 : 0.01,
       0
     ))
 

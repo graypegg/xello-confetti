@@ -65,7 +65,7 @@ export class ConfettiScene {
           this.camera.position.z = 20
           this.camera.position.y = 16
           this.tick()
-          this.timers.push(window.setInterval(this.tick.bind(this), 14))
+          this.timers.push(window.setInterval(this.tick.bind(this), 15))
           clearInterval(waitForBakingWorker)
         }
       }, 200)
@@ -152,7 +152,7 @@ export class ConfettiScene {
   }
 
   private commit (nextFrames: ConfettiParticleFrame[][]) {
-    if (this.particleFrameBuffer.length <= 250) {
+    if (this.particleFrameBuffer.length <= 350) {
       this.bakingWorker.postMessage(nextFrames[nextFrames.length - 1])
 
       if (this.particleFrameBuffer.length > 100) {
@@ -192,7 +192,7 @@ export class ConfettiScene {
   }
 
   private tick () {
-    if (this.frame > 250) this.stop()
+    if (this.frame > 350) this.stop()
     else {
       this.renderBuffer()
     }
