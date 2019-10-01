@@ -15,14 +15,14 @@ function getRandomMaterial (): Material {
 }
 
 function getRandomVector (): Vector3 {
-  const getRandomDimension = () => Math.ceil(Math.random() * 100)/220
+  const getRandomDimension = () => Math.ceil(Math.random() * 100)/250
   const xDimension = getRandomDimension() * (Math.random() > 0.5 ? -1 : 1)
   const yDimension = ((1 / ((Math.abs(xDimension) < 0.15 ? 0.15 : Math.abs(xDimension)))) / 5) * getRandomDimension()
-  return new Vector3(xDimension, yDimension, getRandomDimension())
+  return new Vector3(xDimension, yDimension, getRandomDimension()).add(new Vector3(0.1, 0, 0))
 }
 
 function getRandomBoxGeometry (): BoxGeometry {
-  const getRandomDimension = () => (Math.random() * 0.7) + 0.3
+  const getRandomDimension = () => (Math.random() * 0.2) + 0.6
   return new BoxGeometry(getRandomDimension() + 0.2, 0.05, getRandomDimension() - 0.2)
 }
 
@@ -59,8 +59,8 @@ export class ConfettiScene {
     const waitForBakingWorker = setInterval(() => {
       if (this.bakingWorker && this.particles && this.bakingWorkerReady) {
         this.scene.visible = true
-        this.camera.position.z = 15
-        this.camera.position.y = 12
+        this.camera.position.z = 20
+        this.camera.position.y = 16
         this.tick()
         this.timers.push(window.setInterval(this.tick.bind(this), 15))
         clearInterval(waitForBakingWorker)
