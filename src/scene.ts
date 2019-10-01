@@ -2,6 +2,7 @@ import { Scene, PerspectiveCamera, WebGLRenderer, MeshBasicMaterial, Mesh, Mater
 import { ConfettiParticles, ConfettiParticleFrame } from 'types'
 import { ResizeWatcher } from './resize-watcher'
 import Worker from './bake.worker'
+import { FrameRenderer } from './Scene/FrameRenderer'
 
 function getRandomMaterial (): Material {
   const colours = [
@@ -36,8 +37,10 @@ export class ConfettiScene {
   private bakingWorkerReady = false
   private particleFrameBuffer: ConfettiParticleFrame[][] = [[]]
   private particles: ConfettiParticles = {}
-  private resizeWatcher: ResizeWatcher = null
   public playing: boolean = false
+
+  private ResizeWatcher: ResizeWatcher = null
+  private FrameRenderer: FrameRenderer = null
 
   constructor () {
     this.scene = new Scene()
@@ -53,6 +56,7 @@ export class ConfettiScene {
     this.initConfetti()
     if (this.latestFrameBuffer) {
       this.bakingWorker.postMessage(this.latestFrameBuffer)
+      this.FrameRenderer = new FrameRenderer(this.particles, this.renderer, this.scene, this.camera)
     }
   }
 
@@ -60,7 +64,7 @@ export class ConfettiScene {
     if (!this.playing) {
       this.playing = true
       const waitForBakingWorker = setInterval(() => {
-        if (this.bakingWorker && this.particles && this.bakingWorkerReady) {
+        if (this.bakingWorker && this.particles && this.FrameRenderer && this.bakingWorkerReady) {
           this.scene.visible = true
           this.camera.position.z = 20
           this.camera.position.y = 16
@@ -69,8 +73,8 @@ export class ConfettiScene {
           clearInterval(waitForBakingWorker)
         }
       }, 200)
-      this.resizeWatcher = new ResizeWatcher()
-      this.resizeWatcher.onResize((height, width) => {
+      this.ResizeWatcher = new ResizeWatcher()
+      this.ResizeWatcher.onResize((height, width) => {
         this.camera.aspect = width / height
         this.renderer.setSize(width, height)
         this.renderer.render(this.scene, this.camera)
@@ -91,8 +95,8 @@ export class ConfettiScene {
       const vector = firstFrame.find(frame => frame.meshId === objectId).vector
       this.placeConfetti(mesh, vector)
     })
-    if (this.resizeWatcher) this.resizeWatcher.stop()
-    this.resizeWatcher = null
+    if (this.ResizeWatcher) this.ResizeWatcher.stop()
+    this.ResizeWatcher = null
   }
 
   kill () {
@@ -165,27 +169,8 @@ export class ConfettiScene {
 
   private renderBuffer () {
     if (this.currentFrameBuffer) {
-      this.currentFrameBuffer.forEach((particleFrame) => {
-        if (!particleFrame.frame.flags.remove) {
-          this.particles[particleFrame.meshId].position.set(
-            particleFrame.frame.position.x,
-            particleFrame.frame.position.y,
-            particleFrame.frame.position.z
-          )
-          this.particles[particleFrame.meshId].rotation.set(
-            particleFrame.frame.rotation.x,
-            particleFrame.frame.rotation.y,
-            particleFrame.frame.rotation.z
-          )
-        } else {
-          this.scene.remove(this.particles[particleFrame.meshId])
-        }
-      })
+      this.FrameRenderer.render(this.currentFrameBuffer)
       this.frame++
-
-      requestAnimationFrame(() => {
-        this.renderer.render(this.scene, this.camera)
-      })
     } else {
       console.warn('Ahead of frame buffer!')
     }
