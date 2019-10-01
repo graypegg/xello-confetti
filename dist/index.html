@@ -19,11 +19,12 @@
     <button>confetti now!</button>
     
     <xello-confetti></xello-confetti>
+    <xello-confetti></xello-confetti>
     <script src="index.js"></script>
     <script>
-      const confetti = document.querySelector('xello-confetti');
+      const confettis = document.querySelectorAll('xello-confetti');
       document.querySelector('button').addEventListener('click', () => {
-        confetti.play()
+        confettis.forEach(c => c.play())
       })
     </script>
   </body>

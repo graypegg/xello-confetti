@@ -24,7 +24,7 @@ export class ConfettiScene {
   private scene: Scene
   private camera: PerspectiveCamera
   private renderer: WebGLRenderer
-  private timer: number = null
+  private timers: number[] = []
   private frame: number = 0
   private bakingWorker: Worker = null
   private bakingWorkerReady = false
@@ -56,7 +56,7 @@ export class ConfettiScene {
         this.camera.position.z = 15
         this.camera.position.y = 12
         this.tick()
-        this.timer = window.setInterval(this.tick.bind(this), 15)
+        this.timers.push(window.setInterval(this.tick.bind(this), 15))
         clearInterval(waitForBakingWorker)
       }
     }, 200)
@@ -70,7 +70,8 @@ export class ConfettiScene {
 
   stop() {
     this.scene.visible = false
-    if (this.timer !== null) clearInterval(this.timer)
+    this.timers.forEach(timer => clearInterval(timer))
+    this.timers = []
     this.renderer.render(this.scene, this.camera)
     this.frame = 0
     const firstFrame = this.currentFrameBuffer
