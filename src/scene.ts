@@ -110,7 +110,7 @@ export class ConfettiScene {
   }
 
   private initConfetti () {
-    for (let i=0; i < 1000; i++) {
+    for (let i=0; i < 750; i++) {
       const geometry = getRandomBoxGeometry()
       const material = getRandomMaterial()
       const confettiMesh = new Mesh(geometry, material)
