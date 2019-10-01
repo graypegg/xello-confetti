@@ -13,7 +13,7 @@ ctx.addEventListener('message', event => {
     ])
   }, [event.data])
 
-  ctx.postMessage(frames, null)
+  ctx.postMessage(frames)
 })
 
 function generateFrame (particles) {
