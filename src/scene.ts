@@ -4,8 +4,14 @@ import { ResizeWatcher } from './resize-watcher'
 import Worker from './bake.worker'
 
 function getRandomMaterial (): Material {
-  const getRandomByte = (min: number, variation: number) => Math.ceil(Math.random() * variation) + min
-  return new MeshBasicMaterial({ color: (getRandomByte(200, 55) + (getRandomByte(175, 80) << 8) + (getRandomByte(125, 130) << 16)) })
+  const colours = [
+    new MeshBasicMaterial({ color: '#6A93D8' }),
+    new MeshBasicMaterial({ color: '#D95C9F' }),
+    new MeshBasicMaterial({ color: '#52B886' }),
+    new MeshBasicMaterial({ color: '#F8AA24' }),
+    new MeshBasicMaterial({ color: '#F86243' })
+  ]
+  return colours[Math.floor(Math.random() * (colours.length))]
 }
 
 function getRandomVector (): Vector3 {
@@ -16,7 +22,7 @@ function getRandomVector (): Vector3 {
 }
 
 function getRandomBoxGeometry (): BoxGeometry {
-  const getRandomDimension = () => (Math.random() * 0.6) + 0.4
+  const getRandomDimension = () => (Math.random() * 0.7) + 0.3
   return new BoxGeometry(getRandomDimension() + 0.2, 0.05, getRandomDimension() - 0.2)
 }
 
