@@ -147,10 +147,10 @@ export class ConfettiScene {
   }
 
   private commit (nextFrame: ConfettiParticleFrame[]) {
-    if (this.particleFrameBuffer.length <= 200) {
+    if (this.particleFrameBuffer.length <= 250) {
       this.bakingWorker.postMessage(nextFrame)
 
-      if (this.particleFrameBuffer.length > 10) {
+      if (this.particleFrameBuffer.length > 100) {
         this.bakingWorkerReady = true
       }
     }
@@ -186,7 +186,7 @@ export class ConfettiScene {
   }
 
   private tick () {
-    if (this.frame > 200) this.stop()
+    if (this.frame > 250) this.stop()
     else {
       this.renderBuffer()
     }
