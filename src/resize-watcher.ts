@@ -11,6 +11,7 @@ export class ResizeWatcher {
   constructor () {
     this.eventInstance = debounce(200)(this.tick.bind(this))
     window.addEventListener('resize', this.eventInstance)
+    this.eventInstance()
   }
 
   private tick () {
