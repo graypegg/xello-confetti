@@ -7,20 +7,25 @@ const TARGET_FPS = 60
 export class Animator {
   private frame = 0
   private timer: number = null
+  private ready: boolean = true
   constructor (
     private FrameRenderer: FrameRenderer,
     private Baker: Baker
   ) { }
 
   public start () {
-    const waitForBakingWorker = setInterval(() => {
-      if (this.Baker.ready) {
-        this.FrameRenderer.reveal()
-        this.tick()
-        this.timer = window.setInterval(this.tick.bind(this), 1000/TARGET_FPS)
-        clearInterval(waitForBakingWorker)
-      }
-    }, 200)
+    if (this.ready) {
+      this.ready = false
+      const waitForBakingWorker = setInterval(() => {
+        if (this.Baker.ready) {
+          this.FrameRenderer.reveal()
+          this.tick()
+          this.timer = window.setInterval(this.tick.bind(this), 1000/TARGET_FPS)
+          clearInterval(waitForBakingWorker)
+          this.ready = true
+        }
+      }, 200)
+    }
   }
 
   public stop () {
