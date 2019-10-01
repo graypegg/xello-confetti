@@ -16,9 +16,9 @@ function getRandomMaterial (): Material {
 
 function getRandomVector (): Vector3 {
   const getRandomDimension = () => Math.ceil(Math.random() * 100)/250
-  const xDimension = getRandomDimension() * (Math.random() > 0.5 ? -1 : 1)
+  const xDimension = getRandomDimension() * (Math.random() > 0.5 ? -0.8 : 0.8)
   const yDimension = ((1 / ((Math.abs(xDimension) < 0.15 ? 0.15 : Math.abs(xDimension)))) / 5) * getRandomDimension()
-  return new Vector3(xDimension, yDimension, getRandomDimension()).add(new Vector3(0.1, 0, 0))
+  return new Vector3(xDimension, yDimension, getRandomDimension() * 0.35)
 }
 
 function getRandomBoxGeometry (): BoxGeometry {
@@ -110,7 +110,7 @@ export class ConfettiScene {
   }
 
   private initConfetti () {
-    for (let i=0; i < 750; i++) {
+    for (let i=0; i < 1000; i++) {
       const geometry = getRandomBoxGeometry()
       const material = getRandomMaterial()
       const confettiMesh = new Mesh(geometry, material)

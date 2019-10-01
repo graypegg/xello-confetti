@@ -30,9 +30,9 @@ ctx.addEventListener('message', event => {
       particle.vector.y,
       particle.vector.z
     ).add(new Vector3(
-      0
+      (particle.vector.x < 0 ? -1 : 1) * (Math.sin(particle.vector.y < 0 ? Math.abs(particle.frame.position.y) : 0) * 0.0075),
       -0.005,
-      particle.vector.z * -0.02
+      0
     ))
 
     if (particle.frame.position.y < -2 || Math.abs(particle.frame.position.x) > 30) {
