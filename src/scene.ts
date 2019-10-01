@@ -17,7 +17,7 @@ function getRandomMaterial (): Material {
 function getRandomVector (): Vector3 {
   const getRandomDimension = () => Math.ceil(Math.random() * 100)/250
   const xDimension = getRandomDimension() * (Math.random() > 0.5 ? -0.8 : 0.8)
-  const yDimension = ((1 / ((Math.abs(xDimension) < 0.15 ? 0.15 : Math.abs(xDimension)))) / 5) * getRandomDimension()
+  const yDimension = ((1 / ((Math.abs(xDimension) < 0.15 ? 0.15 : Math.abs(xDimension)))) / 5) * getRandomDimension() * 1.25
   return new Vector3(xDimension, yDimension, getRandomDimension() * 0.35)
 }
 
@@ -37,6 +37,7 @@ export class ConfettiScene {
   private particleFrameBuffer: ConfettiParticleFrame[][] = [[]]
   private particles: ConfettiParticles = {}
   private resizeWatcher: ResizeWatcher = null
+  public playing: boolean = false
 
   constructor () {
     this.scene = new Scene()
@@ -56,25 +57,29 @@ export class ConfettiScene {
   }
 
   start () {
-    const waitForBakingWorker = setInterval(() => {
-      if (this.bakingWorker && this.particles && this.bakingWorkerReady) {
-        this.scene.visible = true
-        this.camera.position.z = 20
-        this.camera.position.y = 16
-        this.tick()
-        this.timers.push(window.setInterval(this.tick.bind(this), 15))
-        clearInterval(waitForBakingWorker)
-      }
-    }, 200)
-    this.resizeWatcher = new ResizeWatcher()
-    this.resizeWatcher.onResize((height, width) => {
-      this.camera.aspect = width / height
-      this.renderer.setSize(width, height)
-      this.renderer.render(this.scene, this.camera)
-    })
+    if (!this.playing) {
+      this.playing = true
+      const waitForBakingWorker = setInterval(() => {
+        if (this.bakingWorker && this.particles && this.bakingWorkerReady) {
+          this.scene.visible = true
+          this.camera.position.z = 20
+          this.camera.position.y = 16
+          this.tick()
+          this.timers.push(window.setInterval(this.tick.bind(this), 14))
+          clearInterval(waitForBakingWorker)
+        }
+      }, 200)
+      this.resizeWatcher = new ResizeWatcher()
+      this.resizeWatcher.onResize((height, width) => {
+        this.camera.aspect = width / height
+        this.renderer.setSize(width, height)
+        this.renderer.render(this.scene, this.camera)
+      })
+    }
   }
 
   stop() {
+    this.playing = false
     this.scene.visible = false
     this.timers.forEach(timer => clearInterval(timer))
     this.timers = []
