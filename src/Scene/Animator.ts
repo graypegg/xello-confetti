@@ -6,6 +6,7 @@ const TARGET_FPS = 60
 
 export class Animator {
   private frame = 0
+  private droppedFrames = 0
   private timer: number = null
   private ready: boolean = true
   constructor (
@@ -37,7 +38,7 @@ export class Animator {
   }
 
   private tick () {
-    if (this.frame > MAX_FRAMES) this.stop()
+    if ((this.frame + this.droppedFrames) > MAX_FRAMES) this.stop()
     else {
       const currentScreenFrame = this.Baker.getScreenFrame(this.frame)
       if (currentScreenFrame) {
@@ -45,6 +46,7 @@ export class Animator {
         this.frame++
       } else {
         console.warn('Ahead of frame buffer!')
+        this.droppedFrames++
       }
     }
   }
