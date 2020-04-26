@@ -1,4 +1,4 @@
-import { Mesh, Vector3 } from 'three'
+import { Mesh, Vector3, MeshBasicMaterialParameters, Color } from 'three'
 
 declare var __webpack_public_path__: string;
 declare module "worker-loader!*" {
@@ -8,6 +8,8 @@ declare module "worker-loader!*" {
 
   export default WebpackWorker;
 }
+
+export type ValueOf<T> = T[keyof T]
 
 export interface ConfettiParticleFrame {
   meshId: keyof ConfettiParticles;
@@ -30,5 +32,28 @@ export interface ConfettiParticleFrame {
 }
 
 export interface ConfettiParticles {
-  [objectId: string]: Mesh
+  [objectId: string]: Mesh;
+}
+
+export type TextureID = string;
+
+export interface ConfettiTextureRef {
+  id: TextureID,
+  url: string
+}
+
+export interface ConfettiMaterial {
+  textureMap?: TextureID;
+  alphaMap?: TextureID;
+  colour?: string | number | Color;
+}
+
+export interface ConfettiTheme {
+  size: {
+    base: number;
+    ratio: number;
+    variance: number;
+  },
+  textures: ConfettiTextureRef[],
+  materials: ConfettiMaterial[];
 }
