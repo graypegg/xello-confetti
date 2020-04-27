@@ -7,7 +7,7 @@ const TARGET_FPS = 60
 export class Animator {
   private frame = 0
   private droppedFrames = 0
-  private timer: number = null
+  private timer: number | null = null
   private ready: boolean = true
   constructor (
     private FrameRenderer: FrameRenderer,

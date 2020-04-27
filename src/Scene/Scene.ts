@@ -1,32 +1,14 @@
-import { Scene, PerspectiveCamera, WebGLRenderer, MeshBasicMaterial, Mesh, Material, Vector3, BoxGeometry } from 'three'
+import { Scene, PerspectiveCamera, WebGLRenderer } from 'three'
 import { ConfettiParticles } from 'types'
 import { ResizeWatcher } from '../ResizeWatcher'
 import { FrameRenderer } from './FrameRenderer'
 import { Baker } from '../Baker/Baker'
 import { Animator } from './Animator'
-
-function getRandomMaterial (): Material {
-  const colours = [
-    new MeshBasicMaterial({ color: '#6A93D8' }),
-    new MeshBasicMaterial({ color: '#D95C9F' }),
-    new MeshBasicMaterial({ color: '#52B886' }),
-    new MeshBasicMaterial({ color: '#F8AA24' }),
-    new MeshBasicMaterial({ color: '#F86243' })
-  ]
-  return colours[Math.floor(Math.random() * colours.length)]
-}
-
-function getRandomVector (): Vector3 {
-  const getRandomDimension = () => Math.ceil(Math.random() * 100)/250
-  const xDimension = getRandomDimension() * (Math.random() > 0.5 ? -0.8 : 0.8)
-  const yDimension = ((1 / ((Math.abs(xDimension) < 0.15 ? 0.15 : Math.abs(xDimension)))) / 5) * getRandomDimension() * 1.25
-  return new Vector3(xDimension, yDimension, getRandomDimension() * 0.35)
-}
-
-function getRandomBoxGeometry (): BoxGeometry {
-  const getRandomDimension = () => (Math.random() * 0.2) + 0.6
-  return new BoxGeometry(getRandomDimension() + 0.2, 0.05, getRandomDimension() - 0.2)
-}
+import { TextureStore } from './Texture'
+import { MaterialStore } from './Material';
+import { ConfettiTheme } from '../types';
+import { ConfettiParticle } from './ConfettiParticle';
+import { SizeStore } from './Size';
 
 export class ConfettiScene {
   private scene: Scene
@@ -34,10 +16,14 @@ export class ConfettiScene {
   private renderer: WebGLRenderer
   private particles: ConfettiParticles = {}
 
-  private Baker: Baker = null
-  private ResizeWatcher: ResizeWatcher = null
-  private FrameRenderer: FrameRenderer = null
-  private Animator: Animator = null
+  private Baker: Baker | null = null
+  private ResizeWatcher: ResizeWatcher | null = null
+  private FrameRenderer: FrameRenderer | null = null
+  private Animator: Animator | null = null
+  
+  private TextureStore: TextureStore = new TextureStore()
+  private MaterialStore: MaterialStore = new MaterialStore(this.TextureStore)
+  private SizeStore: SizeStore = new SizeStore()
 
   constructor () {
     this.scene = new Scene()
@@ -48,6 +34,24 @@ export class ConfettiScene {
   }
 
   mount (element: HTMLElement | ShadowRoot) {
+    this.setTheme({
+      size: {
+        base: 0.6,
+        variance: 0.2,
+        ratio: 0.4
+      },
+      textures: [
+        { id: 'hmm', url: '/wah.png' }
+      ],
+      materials: [
+        { colour: '#6A93D8' },
+        { colour: '#D95C9F' },
+        { colour: '#52B886' },
+        { colour: '#F8AA24' },
+        { colour: '#F86243' }
+      ]
+    })
+
     this.Baker = new Baker()
     this.initConfetti()
     this.Baker.start()
@@ -60,21 +64,27 @@ export class ConfettiScene {
 
     this.ResizeWatcher = new ResizeWatcher()
     this.ResizeWatcher.onResize((width, height) => {
-      this.FrameRenderer.resize(width, height)
+      if (this.FrameRenderer) this.FrameRenderer.resize(width, height)
     })
+  }
+
+  setTheme (theme: Partial<ConfettiTheme>) {
+    if (theme.size) this.SizeStore.store(theme.size)
+    if (theme.textures) theme.textures.forEach(textureRef => this.TextureStore.store(textureRef))
+    if (theme.materials) {
+      this.MaterialStore.clear()
+      theme.materials.forEach(materialRef => this.MaterialStore.store(materialRef))
+    }
+
+    this.expandConfetti()
   }
 
   start () {
-    this.Animator.start()
+    this.Animator?.start()
   }
 
   stop() {
-    this.Animator.stop()
-    Object.keys(this.particles).forEach(objectId => {
-      const mesh = this.particles[objectId]
-      const vector = this.Baker.getScreenFrame(0).find(frame => frame.meshId === objectId).vector
-      this.placeConfetti(mesh, vector)
-    })
+    this.Animator?.stop()
   }
 
   kill () {
@@ -89,38 +99,21 @@ export class ConfettiScene {
 
   private initConfetti () {
     for (let i=0; i < 750; i++) {
-      const geometry = getRandomBoxGeometry()
-      const material = getRandomMaterial()
-      const confettiMesh = new Mesh(geometry, material)
-      this.placeConfetti(confettiMesh, getRandomVector())
+      const particle = new ConfettiParticle()
+      this.particles[particle.uuid] = particle
+      this.Baker?.addParticleToAnimation(particle)
     }
+
+    this.expandConfetti()
   }
 
-  private placeConfetti(confettiMesh: Mesh, confettiVector: Vector3) {
-    confettiMesh.position.x = 1
-    confettiMesh.position.y = 0
-
-    this.particles[confettiMesh.uuid] = confettiMesh
-    this.Baker.latestScreenFrame.push({
-      meshId: confettiMesh.uuid,
-      vector: confettiVector,
-      frame: {
-        position: {
-          x: confettiMesh.position.x,
-          y: confettiMesh.position.y,
-          z: confettiMesh.position.z
-        },
-        rotation: {
-          x: confettiMesh.rotation.x,
-          y: confettiMesh.rotation.y,
-          z: confettiMesh.rotation.z
-        },
-        flags: {
-          remove: false
-        }
-      }
+  /**
+   * Textures and expands particles to confetti.
+   */
+  private expandConfetti () {
+    Object.keys(this.particles).forEach(uuid => {
+      this.particles[uuid].material = this.MaterialStore.getRandom()
+      this.particles[uuid].expand(this.SizeStore.size)
     })
-
-    this.scene.add(confettiMesh)
   }
 }

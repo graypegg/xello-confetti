@@ -6,7 +6,7 @@ export class ResizeWatcher {
   private width = 0
   private height = 0
   private methods: ResizeMethod[] = []
-  private eventInstance: () => void = null
+  private eventInstance: () => void
 
   constructor () {
     this.eventInstance = debounce(200)(this.tick.bind(this))
@@ -33,7 +33,6 @@ export class ResizeWatcher {
 
   public stop () {
     window.removeEventListener('resize', this.eventInstance)
-    this.eventInstance = null
     this.methods = []
   }
 }
