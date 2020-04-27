@@ -2,7 +2,7 @@ import { ConfettiParticles, ConfettiParticleFrame } from 'types'
 import { Renderer, Scene, PerspectiveCamera } from 'three'
 
 export class FrameRenderer {
-  private lastRenderedScreenFrame: ConfettiParticleFrame[] = null
+  private lastRenderedScreenFrame: ConfettiParticleFrame[] | null = null
 
   constructor (
     private particles: ConfettiParticles,

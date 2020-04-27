@@ -6,7 +6,7 @@
   "scripts": {
     "start": "webpack --watch",
     "build": "rm -f ./dist/*.js && webpack --config 'webpack.config.prod.js'",
-    "release": "npm run build && npm version patch && cp package.json ./dist/package.json && cd dist && npm publish",
+    "release": "npm run build && npm version prerelease && cp package.json ./dist/package.json && cd dist && npm publish",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -19,7 +19,7 @@
     "lodash": "^4.17.15",
     "three": "^0.108.0",
     "ts-loader": "^6.1.0",
-    "typescript": "^3.6.3",
+    "typescript": "^3.8.3",
     "webpack": "^4.39.3",
     "webpack-cli": "^3.3.8",
     "worker-loader": "^2.0.0"

@@ -2,9 +2,9 @@ import './Scene/Scene'
 import { ConfettiScene } from './Scene/Scene'
 import { ConfettiTheme } from './types';
 
-class XelloConfetti extends HTMLElement {
+export class XelloConfetti extends HTMLElement {
   private mountRoot: ShadowRoot | null = null
-  private scene: ConfettiScene;
+  private scene: ConfettiScene | null = null;
   
   connectedCallback () {
     this.mountRoot = this.attachShadow({ mode: 'open' })
@@ -22,20 +22,20 @@ class XelloConfetti extends HTMLElement {
   }
 
   disconnectedCallback () {
-    this.scene.kill()
+    this.scene?.kill()
   }
 
   public play () {
     this.clear()
-    this.scene.start()
+    this.scene?.start()
   }
 
   public clear () {
-    this.scene.stop()
+    this.scene?.stop()
   }
 
   public setTheme (theme: Partial<ConfettiTheme>) {
-    this.scene.setTheme(theme)
+    this.scene?.setTheme(theme)
   }
 }
 

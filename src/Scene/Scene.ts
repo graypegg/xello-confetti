@@ -1,4 +1,4 @@
-import { Scene, PerspectiveCamera, WebGLRenderer, MeshBasicMaterial, Mesh, Material, Vector3, BoxGeometry } from 'three'
+import { Scene, PerspectiveCamera, WebGLRenderer } from 'three'
 import { ConfettiParticles } from 'types'
 import { ResizeWatcher } from '../ResizeWatcher'
 import { FrameRenderer } from './FrameRenderer'
@@ -16,10 +16,11 @@ export class ConfettiScene {
   private renderer: WebGLRenderer
   private particles: ConfettiParticles = {}
 
-  private Baker: Baker = null
-  private ResizeWatcher: ResizeWatcher = null
-  private FrameRenderer: FrameRenderer = null
-  private Animator: Animator = null
+  private Baker: Baker | null = null
+  private ResizeWatcher: ResizeWatcher | null = null
+  private FrameRenderer: FrameRenderer | null = null
+  private Animator: Animator | null = null
+  
   private TextureStore: TextureStore = new TextureStore()
   private MaterialStore: MaterialStore = new MaterialStore(this.TextureStore)
   private SizeStore: SizeStore = new SizeStore()
@@ -63,7 +64,7 @@ export class ConfettiScene {
 
     this.ResizeWatcher = new ResizeWatcher()
     this.ResizeWatcher.onResize((width, height) => {
-      this.FrameRenderer.resize(width, height)
+      if (this.FrameRenderer) this.FrameRenderer.resize(width, height)
     })
   }
 
@@ -79,11 +80,11 @@ export class ConfettiScene {
   }
 
   start () {
-    this.Animator.start()
+    this.Animator?.start()
   }
 
   stop() {
-    this.Animator.stop()
+    this.Animator?.stop()
   }
 
   kill () {
@@ -100,7 +101,7 @@ export class ConfettiScene {
     for (let i=0; i < 750; i++) {
       const particle = new ConfettiParticle()
       this.particles[particle.uuid] = particle
-      this.Baker.addParticleToAnimation(particle)
+      this.Baker?.addParticleToAnimation(particle)
     }
 
     this.expandConfetti()
