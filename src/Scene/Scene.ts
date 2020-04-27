@@ -21,24 +21,6 @@ function getRandomBoxGeometry (): BoxGeometry {
 }
 
 export class ConfettiScene {
-  public theme: ConfettiTheme = {
-    size: {
-      base: 0.6,
-      variance: 0.2,
-      ratio: 0.4
-    },
-    textures: [
-      { id: 'hmm', url: '/wah.png' }
-    ],
-    materials: [
-      { colour: '#6A93D8' },
-      { colour: '#D95C9F' },
-      { colour: '#52B886' },
-      { colour: '#F8AA24' },
-      { colour: '#F86243' }
-    ]
-  }
-
   private scene: Scene
   private camera: PerspectiveCamera
   private renderer: WebGLRenderer
@@ -60,7 +42,23 @@ export class ConfettiScene {
   }
 
   mount (element: HTMLElement | ShadowRoot) {
-    this.updateFromTheme()
+    this.setTheme({
+      size: {
+        base: 0.6,
+        variance: 0.2,
+        ratio: 0.4
+      },
+      textures: [
+        { id: 'hmm', url: '/wah.png' }
+      ],
+      materials: [
+        { colour: '#6A93D8' },
+        { colour: '#D95C9F' },
+        { colour: '#52B886' },
+        { colour: '#F8AA24' },
+        { colour: '#F86243' }
+      ]
+    })
 
     this.Baker = new Baker()
     this.initConfetti()
@@ -78,9 +76,12 @@ export class ConfettiScene {
     })
   }
 
-  updateFromTheme () {
-    this.theme.textures.forEach(textureRef => this.TextureStore.store(textureRef))
-    this.theme.materials.forEach(materialRef => this.MaterialStore.store(materialRef))
+  setTheme (theme: Partial<ConfettiTheme>) {
+    if (theme.textures) theme.textures.forEach(textureRef => this.TextureStore.store(textureRef))
+    this.MaterialStore.clear()
+    if (theme.materials) theme.materials.forEach(materialRef => this.MaterialStore.store(materialRef))
+
+    this.textureConfetti()
   }
 
   start () {
@@ -109,12 +110,13 @@ export class ConfettiScene {
   private initConfetti () {
     for (let i=0; i < 750; i++) {
       const geometry = getRandomBoxGeometry()
-      const material = this.MaterialStore.getRandom()
-      const confettiMesh = new Mesh(geometry, material)
+      const confettiMesh = new Mesh(geometry)
       this.placeConfetti(confettiMesh, getRandomVector())
     }
-  }
 
+    this.textureConfetti()
+  }
+  
   private placeConfetti(confettiMesh: Mesh, confettiVector: Vector3) {
     confettiMesh.position.x = 1
     confettiMesh.position.y = 0
@@ -141,5 +143,11 @@ export class ConfettiScene {
     })
 
     this.scene.add(confettiMesh)
+  }
+
+  private textureConfetti () {
+    Object.keys(this.particles).forEach(uuid => {
+      this.particles[uuid].material = this.MaterialStore.getRandom()
+    })
   }
 }
