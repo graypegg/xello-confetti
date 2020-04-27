@@ -46,7 +46,7 @@ function generateFrame (particles) {
       0
     ))
 
-    if (particle.frame.position.y < -2 || Math.abs(particle.frame.position.x) > 25) {
+    if (particle.frame.position.y < -2 || Math.abs(particle.frame.position.x) > 30) {
       particle.frame.flags.remove = true
     }
 

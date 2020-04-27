@@ -1,4 +1,5 @@
 import { Mesh, Vector3, MeshBasicMaterialParameters, Color } from 'three'
+import { ConfettiParticle } from 'Scene/ConfettiParticle';
 
 declare var __webpack_public_path__: string;
 declare module "worker-loader!*" {
@@ -32,7 +33,7 @@ export interface ConfettiParticleFrame {
 }
 
 export interface ConfettiParticles {
-  [objectId: string]: Mesh;
+  [objectId: string]: ConfettiParticle;
 }
 
 export type TextureID = string;

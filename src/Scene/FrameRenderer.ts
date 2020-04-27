@@ -25,6 +25,7 @@ export class FrameRenderer {
           particleFrame.frame.rotation.y,
           particleFrame.frame.rotation.z
         )
+        this.scene.add(this.particles[particleFrame.meshId])
       } else {
         this.scene.remove(this.particles[particleFrame.meshId])
       }
