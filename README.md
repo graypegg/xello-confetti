@@ -5,13 +5,13 @@ A pre-baking animation that performantly add's some fun confetti magic to your a
 ![An example of the confetti effect](https://github.com/toish/xello-confetti/raw/master/example.gif)
 
 ## Performance
-You can skip this blurb. I wanted to play around with web performance for something like this, so here's some notes on the optimizations in this:
+You can skip this blurb. I wanted to play around with web performance, so here's some notes on the optimizations:
 
 The animation frames are pre-baked as particles in a super over-simplified particle system. The element starts with the Baker determining the initial random force vectors for every single particle (750 of them) and compiling those into the first screen frame. Then, it passes that first frame to the Bake Worker, (a separate web-worker that keeps all of this frame generation off of the main thread) which calculates the next 25 screen frames, marking some particles for removal if they fall of the screen. Meanwhile, the main thread is free to continue doing UI things. Those 25 screen frames are then passed back (via a non-blocking event) to the Baker that saves them and asks for the next 25. This process goes on till all frames are rendered with all particles removed from the last frame.
 
 The Baker now has all of the screen frames, so those can be passed to the FrameRenderer, one by one, in time, by the Animation manager. Particle objects are reused but ones that are marked as removed for that frame are removed from the scene to save a bit of time when looping over everything in the scene during the next frame.
 
-The Frame Renderer caches a copy of the current frame when rendering a new one, so if the Animation manager runs out of frames while the Baker catches up, the Frame Renderer will just render the last frame till it's ready.
+> The Baker can also be asked for screen frames when it doesn't have all of them yet. This allows for it to catch up while the animation plays. I haven't come across a case where things are naturally processed slow enough for this to happen, but it can be emulated by using chrome's dev tools to virtually slow the CPU clock speed down 4X. The FrameRenderer also caches a copy of the current frame when rendering a new one, so if the Animation manager runs out of frames while the Baker catches up, the Frame Renderer will just render the last frame till it's ready. Again, haven't seen that happen in the wild, but still a possibility.
 
 ## Installation
 ```
@@ -19,7 +19,7 @@ $ npm install xello-confetti
 ```
 
 ## How to use
-Just include this package in your project. (Ideally at boot. In angular this means in `main.ts`)
+Just include this package in your project. (Ideally right when things are starting. In angular this means in `main.ts`.)
 
 ```typescript
 import 'xello-confetti'
@@ -64,7 +64,7 @@ xellofetti.setTheme({
 		{
 			id: 'money',     // A unique ID to refer to this texture in any materials
 			url: '/bill.png' // The image URL to download from. (Needs CORS headers if it's NOT on the origin!)
-							 // Note: You can also use 'data:...' urls here.
+					 // Note: You can also use 'data:...' urls here.
 		}, ...
 	], ...
 })
