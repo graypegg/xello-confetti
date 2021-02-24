@@ -3,6 +3,7 @@ import { Renderer, Scene, PerspectiveCamera } from 'three'
 
 export class FrameRenderer {
   private lastRenderedScreenFrame: ConfettiParticleFrame[] | null = null
+  public particlesOnScreen: number = 0
 
   constructor (
     private particles: ConfettiParticles,
@@ -26,8 +27,10 @@ export class FrameRenderer {
           particleFrame.frame.rotation.z
         )
         this.scene.add(this.particles[particleFrame.meshId])
+        this.particlesOnScreen++
       } else {
         this.scene.remove(this.particles[particleFrame.meshId])
+        this.particlesOnScreen--
       }
     })
 

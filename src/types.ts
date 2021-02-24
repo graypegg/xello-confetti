@@ -1,4 +1,4 @@
-import { Mesh, Vector3, MeshBasicMaterialParameters, Color } from 'three'
+import { Vector3, Color } from 'three'
 import { ConfettiParticle } from 'Scene/ConfettiParticle';
 
 export interface ConfettiParticleFrame {

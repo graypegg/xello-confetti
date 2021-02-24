@@ -11,7 +11,6 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {},
   "devDependencies": {
     "@types/lodash": "^4.14.141",
     "@types/node": "^12.7.8",

@@ -26,7 +26,6 @@ export class XelloConfetti extends HTMLElement {
   }
 
   public play () {
-    this.clear()
     this.scene?.start()
   }
 

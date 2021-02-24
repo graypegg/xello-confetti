@@ -9,6 +9,7 @@ export class Animator {
   private droppedFrames = 0
   private timer: number | null = null
   private ready: boolean = true
+  private playing: boolean = false
   constructor (
     private FrameRenderer: FrameRenderer,
     private Baker: Baker
@@ -16,6 +17,7 @@ export class Animator {
 
   public start () {
     if (this.ready) {
+      this.playing = true
       this.ready = false
       const waitForBakingWorker = setInterval(() => {
         if (this.Baker.ready) {
@@ -30,6 +32,7 @@ export class Animator {
   }
 
   public stop () {
+    this.playing = false
     this.FrameRenderer.clear()
     if (this.timer !== null) clearInterval(this.timer)
     this.timer = null
